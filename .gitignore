@@ -1,5 +1,20 @@
-.env
-*.env
+# Python cache
 __pycache__/
 *.pyc
+*.pyo
+
+# Environment variables / API keys
+.env
+*.env
+
+# Temporary files
+*.tmp
+*.log
+
+# OS files
 .DS_Store
+Thumbs.db
+
+# IDE settings
+.vscode/
+.idea/

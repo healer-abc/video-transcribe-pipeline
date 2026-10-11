@@ -1,126 +1,277 @@
-# 视频转文字工具（VideoTranscribe）
+# Video Transcribe Pipeline
 
-> AI 驱动的视频/音频转录工具。有字幕抓字幕，没字幕用 AI 听写——YouTube、B站、本地文件全支持。
+一个面向学习场景的视频转录工具。
 
-## 功能
+本项目基于开源 VideoTranscribe 项目进行二次开发，针对个人技术学习场景进行了功能扩展：接入 Groq Whisper 语音识别服务，实现 Bilibili 等在线视频自动下载、语音转文字、多格式输出。
 
-- **本地文件转录**：MP4、MOV、MP3、M4A 等，ffmpeg 自动提音频
-- **URL 转录**：YouTube、B站、小宇宙，任何 yt-dlp 支持的平台
-- **字幕优先策略**：有字幕直接抓（快速、0 API 消耗），没有才下音频转录
-- **两种引擎**：Gemini 2.5 Flash（有标点、推荐）/ mlx-whisper（本地离线）
-- **内容提炼**：三种模式——快速摘要 / 结构化笔记 / 内容再创作
-
-## 快速开始
-
-```bash
-# 转录本地视频
-python3 Tools/transcribe.py --input "video.mp4"
-
-# 转录 YouTube 视频
-python3 Tools/transcribe.py --input "https://youtu.be/xxx"
-
-# 转录 B站视频
-python3 Tools/transcribe.py --input "https://www.bilibili.com/video/BVxxx"
-
-# 使用本地 mlx-whisper（离线）
-python3 Tools/transcribe.py --input "video.mp4" --engine mlx
-
-# 指定输出路径
-python3 Tools/transcribe.py --input "video.mp4" --output ~/Desktop/result.txt
-```
-
-## 依赖安装
-
-```bash
-# 必需
-pip3 install google-genai    # Gemini 引擎（推荐）
-brew install yt-dlp ffmpeg   # 音频处理
-
-# 可选（本地离线引擎）
-pip3 install mlx-whisper     # 仅 Apple Silicon
-```
-
-## API Key 配置
-
-Gemini 引擎需要 API Key，从 [Google AI Studio](https://aistudio.google.com/) 免费申请：
-
-```bash
-# 方式一：环境变量
-export GEMINI_API_KEY="your-key"
-
-# 方式二：写入文件（PAI 用户推荐）
-echo 'GEMINI_API_KEY=your-key' >> ~/.shared-skills/api-registry/.env
-```
-
-## 引擎对比
-
-| 引擎 | 命令 | 优点 | 缺点 |
-|------|------|------|------|
-| `gemini`（默认）| `--engine gemini` | 有标点、可读性好、速度快 | 需网络 + API Key |
-| `mlx` | `--engine mlx` | 完全离线、免费 | 无标点、仅 Apple Silicon |
-
-## 接入各类 AI Agent
-
-### 直接调用（所有平台通用）
-
-任何 AI Agent 只需运行 `run.sh` 或直接调 Python 脚本：
-
-```bash
-# 通用入口（推荐）
-bash /path/to/VideoTranscribe/run.sh --input "video.mp4"
-
-# 或直接调脚本
-python3 /path/to/VideoTranscribe/Tools/transcribe.py --input "video.mp4"
-```
-
-### Claude Code
-
-将此目录放入 `~/.shared-skills/`，直接用自然语言触发：
-
-> "帮我把这个视频转成文字"
-> "把这个 YouTube 链接的内容转录出来"
-
-### OpenClaw / Codex / Gemini CLI
-
-在 agent 的工具调用或 bash 执行里直接写：
-
-```bash
-bash ~/.shared-skills/VideoTranscribe/run.sh --input "{{ input_url_or_path }}"
-```
-
-脚本会自动加载 Gemini API Key 并返回转录结果。
-
-## 文件结构
-
-```
-VideoTranscribe/
-├── SKILL.md              # Claude Code skill 入口
-├── Workflows/
-│   ├── Transcribe.md     # 转录流程
-│   └── Extract.md        # 提炼流程（3种模式）
-└── Tools/
-    └── transcribe.py     # 核心脚本
-```
-
-## License
-
-MIT
+项目目标不是替代专业字幕工具，而是建立一个可控、可扩展的视频学习资料采集 pipeline，将课程视频、技术分享快速转换为可检索的文本资料。
 
 ---
 
-## 📱 关注作者 / Follow Me
+## Features
 
-如果这个仓库对你有帮助，欢迎关注我。后面我会持续更新更多 AI Skill、视频转字、字幕生成和内容处理工作流。
+### Video Processing
 
-If this repo helped you, follow me for more AI skills, video transcription, subtitle generation, and content workflows.
+- 支持 Bilibili / YouTube 等 yt-dlp 支持的平台
+- 支持本地视频和音频文件
+- 自动获取视频标题
+- 自动提取音频
 
-- X (Twitter): [@xiaoerzhan](https://x.com/xiaoerzhan)
-- 微信公众号 / WeChat Official Account: 扫码关注 / Scan to follow
+### Speech Recognition
 
-<p align="center">
-  <img src="./follow-wechat-qrcode.jpg" alt="Jane WeChat Official Account QR code" width="300" />
-</p>
+- 使用 Groq API 调用 Whisper large-v3 模型
+- 支持中文语音识别
+- 保留原始内容，不进行自动总结
 
-<p align="center"><strong>中文：</strong>欢迎关注我的公众号，一起研究 AI Skill、视频转字、字幕生成和内容工作流。</p>
+### Multiple Output Formats
 
-<p align="center"><strong>English:</strong> Follow my WeChat Official Account for more AI skills, video transcription, subtitle generation, and content workflows.</p>
+自动生成：
+
+- `.txt`
+  - 原始转录文本
+  - 适合搜索和后续处理
+
+- `.md`
+  - Markdown 格式
+  - 适合 Obsidian 等知识管理工具
+
+- `.srt`
+  - 标准字幕格式
+  - 包含时间戳，可直接用于播放器加载字幕
+
+---
+
+## Pipeline
+
+```
+Video URL / Local File
+
+        ↓
+
+      yt-dlp
+
+        ↓
+
+   Audio Extraction
+
+        ↓
+
+ Groq Whisper large-v3
+
+        ↓
+
+ ┌───────────────┐
+ │               │
+TXT             SRT
+ │
+MD
+```
+
+---
+
+## Project Structure
+
+```
+video-transcribe-pipeline/
+
+├── Tools/
+│   └── transcribe.py        # 主程序
+│
+├── README.md
+├── .gitignore
+└── SKILL.md
+```
+
+---
+
+## Installation
+
+### Requirements
+
+- Python >= 3.10
+- ffmpeg
+- yt-dlp
+
+### Install Python dependencies
+
+```bash
+pip install yt-dlp groq
+```
+
+### Install ffmpeg
+
+Windows:
+
+```powershell
+winget install Gyan.FFmpeg
+```
+
+检查安装：
+
+```powershell
+ffmpeg -version
+yt-dlp --version
+```
+
+---
+
+## API Configuration
+
+本项目使用 Groq API 调用 Whisper 模型。
+
+设置环境变量：
+
+Windows PowerShell:
+
+```powershell
+setx GROQ_API_KEY "your_api_key"
+```
+
+重新打开终端后检查：
+
+```powershell
+echo $env:GROQ_API_KEY
+```
+
+注意：
+
+- 不要将 API Key 写入代码；
+- 不要提交 `.env` 或包含密钥的文件。
+
+---
+
+## Usage
+
+### Bilibili Video
+
+```bash
+python Tools/transcribe.py \
+--input "https://www.bilibili.com/video/BVxxxx/"
+```
+
+### Local Video
+
+```bash
+python Tools/transcribe.py \
+--input "video.mp4"
+```
+
+---
+
+## Output Example
+
+默认输出目录：
+
+```
+D:\Learning\VideoTranscripts
+```
+
+生成：
+
+```
+Video_Title.txt
+Video_Title.md
+Video_Title.srt
+```
+
+---
+
+## Example
+
+输入：
+
+```
+Bilibili AI Course Video
+```
+
+处理：
+
+```
+Video
+ ↓
+Audio Extraction
+ ↓
+Whisper Transcription
+ ↓
+Subtitle Generation
+```
+
+输出：
+
+### TXT
+
+```
+Transformer是一种基于Attention机制的模型...
+```
+
+### Markdown
+
+```markdown
+# Video Title
+
+## Transcript
+
+Transformer是一种基于Attention机制的模型...
+```
+
+### SRT
+
+```
+1
+00:00:00,000 --> 00:00:05,000
+Transformer是一种基于Attention机制的模型。
+```
+
+---
+
+## Development Background
+
+在学习深度学习、机器人和具身智能相关课程时，大量技术视频需要反复查阅。
+
+传统方式通常依赖网页字幕或在线工具，但存在：
+
+- 数据流程不可控；
+- 输出格式固定；
+- 难以整合个人知识库。
+
+因此，本项目构建了一个可扩展的视频转录 pipeline：
+
+```
+视频资源
+    ↓
+自动获取音频
+    ↓
+语音识别
+    ↓
+结构化保存
+    ↓
+个人知识库
+```
+
+---
+
+## Future Improvements
+
+可能的优化方向：
+
+- [ ] 批量视频处理
+- [ ] 自动章节划分
+- [ ] 自动生成课程笔记
+- [ ] 接入本地 Whisper 模型
+- [ ] Obsidian 知识库自动同步
+
+---
+
+## Credits
+
+This project is based on:
+
+VideoTranscribe:
+https://github.com/Jane-xiaoer/claude-skill-video-transcribe
+
+Major modifications:
+
+- Replaced original transcription backend with Groq Whisper
+- Added Bilibili video processing workflow
+- Added TXT / Markdown / SRT export
+- Improved local learning workflow
