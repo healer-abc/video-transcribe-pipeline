@@ -1,104 +1,101 @@
+
 # Video Transcribe Pipeline
 
-一个面向学习场景的视频转录工具。
+> 将 Bilibili / YouTube 视频快速转换为可搜索的学习文本。
 
-本项目基于开源 VideoTranscribe 项目进行二次开发，针对个人技术学习场景进行了功能扩展：接入 Groq Whisper 语音识别服务，实现 Bilibili 等在线视频自动下载、语音转文字、多格式输出。
+Video Transcribe Pipeline 是一个面向学习场景的视频转录工具。
 
-项目目标不是替代专业字幕工具，而是建立一个可控、可扩展的视频学习资料采集 pipeline，将课程视频、技术分享快速转换为可检索的文本资料。
+它可以自动完成：
 
----
+```
+视频链接
+    ↓
+音频提取
+    ↓
+Whisper 语音识别
+    ↓
+TXT / Markdown / SRT 输出
+    ↓
+个人知识库
+```
+
+适用于：
+
+- AI / 深度学习课程整理
+- 技术分享视频转文字
+- Bilibili / YouTube 学习资料整理
+- Obsidian 知识库构建
+
 
 ## Features
 
-### Video Processing
+### 🎬 视频处理
 
-- 支持 Bilibili / YouTube 等 yt-dlp 支持的平台
-- 支持本地视频和音频文件
-- 自动获取视频标题
-- 自动提取音频
+支持：
 
-### Speech Recognition
+- Bilibili 视频
+- YouTube 视频
+- 本地视频文件
 
-- 使用 Groq API 调用 Whisper large-v3 模型
-- 支持中文语音识别
-- 保留原始内容，不进行自动总结
+自动完成：
 
-### Multiple Output Formats
+- 获取视频信息
+- 下载音频
+- 提取语音内容
 
-自动生成：
 
-- `.txt`
-  - 原始转录文本
-  - 适合搜索和后续处理
+### 🧠 高质量语音识别
 
-- `.md`
-  - Markdown 格式
-  - 适合 Obsidian 等知识管理工具
+使用：
 
-- `.srt`
-  - 标准字幕格式
-  - 包含时间戳，可直接用于播放器加载字幕
+- Groq API
+- Whisper large-v3 模型
 
----
+特点：
 
-## Pipeline
+- 支持中文识别
+- 识别速度快
+- 保留原始内容
 
-```
-Video URL / Local File
 
-        ↓
+### 📄 多格式输出
 
-      yt-dlp
-
-        ↓
-
-   Audio Extraction
-
-        ↓
-
- Groq Whisper large-v3
-
-        ↓
-
- ┌───────────────┐
- │               │
-TXT             SRT
- │
-MD
-```
-
----
-
-## Project Structure
+生成：
 
 ```
-video-transcribe-pipeline/
+TXT
+ |
+ ├── 原始转录文本
+ |
+Markdown
+ |
+ └── 适合 Obsidian 笔记管理
 
-├── Tools/
-│   └── transcribe.py        # 主程序
-│
-├── README.md
-├── .gitignore
-└── SKILL.md
+SRT
+ |
+ └── 带时间戳字幕文件
 ```
 
----
 
 ## Installation
 
-### Requirements
+### 1. Clone repository
 
-- Python >= 3.10
-- ffmpeg
-- yt-dlp
+```bash
+git clone https://github.com/healer-abc/video-transcribe-pipeline.git
 
-### Install Python dependencies
+cd video-transcribe-pipeline
+```
+
+
+### 2. Install dependencies
 
 ```bash
 pip install yt-dlp groq
 ```
 
-### Install ffmpeg
+
+### 3. Install ffmpeg
 
 Windows:
 
@@ -106,18 +103,22 @@ Windows:
 winget install Gyan.FFmpeg
 ```
 
-检查安装：
+检查：
 
 ```powershell
 ffmpeg -version
 yt-dlp --version
 ```
 
----
 
-## API Configuration
+## Configure API Key
 
-本项目使用 Groq API 调用 Whisper 模型。
+本项目使用 Groq API 调用 Whisper。
+
+首先获取 API Key：
+
+https://console.groq.com/
+
 
 设置环境变量：
 
@@ -127,40 +128,44 @@ Windows PowerShell:
 setx GROQ_API_KEY "your_api_key"
 ```
 
-重新打开终端后检查：
+重新打开终端。
+
+
+检查：
 
 ```powershell
 echo $env:GROQ_API_KEY
 ```
 
+
 注意：
 
-- 不要将 API Key 写入代码；
-- 不要提交 `.env` 或包含密钥的文件。
+- 不要把 API Key 写入代码
+- 不要上传 `.env` 文件
 
----
 
 ## Usage
 
-### Bilibili Video
+
+### Bilibili 视频
 
 ```bash
 python Tools/transcribe.py \
 --input "https://www.bilibili.com/video/BVxxxx/"
 ```
 
-### Local Video
+
+### 本地视频
 
 ```bash
 python Tools/transcribe.py \
 --input "video.mp4"
 ```
 
----
 
 ## Output Example
 
-默认输出目录：
+默认输出：
 
 ```
 D:\Learning\VideoTranscripts
@@ -169,109 +174,99 @@ D:\Learning\VideoTranscripts
 生成：
 
 ```
-Video_Title.txt
-Video_Title.md
-Video_Title.srt
+视频标题.txt
+视频标题.md
+视频标题.srt
 ```
 
----
 
-## Example
+示例：
 
 输入：
 
 ```
-Bilibili AI Course Video
-```
-
-处理：
-
-```
-Video
- ↓
-Audio Extraction
- ↓
-Whisper Transcription
- ↓
-Subtitle Generation
+Bilibili AI课程视频
 ```
 
 输出：
 
-### TXT
-
 ```
-Transformer是一种基于Attention机制的模型...
-```
-
-### Markdown
-
-```markdown
-# Video Title
-
-## Transcript
-
-Transformer是一种基于Attention机制的模型...
+AI课程视频.md
+AI课程视频.txt
+AI课程视频.srt
 ```
 
-### SRT
+
+## Project Structure
 
 ```
-1
-00:00:00,000 --> 00:00:05,000
-Transformer是一种基于Attention机制的模型。
+video-transcribe-pipeline
+
+├── Tools
+│   └── transcribe.py
+│
+├── README.md
+└── .gitignore
 ```
 
----
 
-## Development Background
+## Design Idea
 
-在学习深度学习、机器人和具身智能相关课程时，大量技术视频需要反复查阅。
+传统视频学习流程：
 
-传统方式通常依赖网页字幕或在线工具，但存在：
+```
+观看视频
+ ↓
+手动记录
+ ↓
+整理笔记
+```
 
-- 数据流程不可控；
-- 输出格式固定；
-- 难以整合个人知识库。
+效率较低。
 
-因此，本项目构建了一个可扩展的视频转录 pipeline：
+
+本项目尝试建立：
 
 ```
 视频资源
-    ↓
-自动获取音频
-    ↓
-语音识别
-    ↓
-结构化保存
-    ↓
+
+ ↓
+
+自动转录
+
+ ↓
+
+结构化文本
+
+ ↓
+
 个人知识库
 ```
 
----
+减少重复整理工作。
+
 
 ## Future Improvements
 
-可能的优化方向：
+计划：
 
-- [ ] 批量视频处理
 - [ ] 自动章节划分
-- [ ] 自动生成课程笔记
-- [ ] 接入本地 Whisper 模型
-- [ ] Obsidian 知识库自动同步
+- [ ] 自动生成学习笔记
+- [ ] 批量视频处理
+- [ ] 接入本地 Whisper
+- [ ] Obsidian 自动同步
 
----
 
 ## Credits
 
 This project is based on:
 
-VideoTranscribe:
 https://github.com/Jane-xiaoer/claude-skill-video-transcribe
+
 
 Major modifications:
 
-- Replaced original transcription backend with Groq Whisper
-- Added Bilibili video processing workflow
+- Replaced transcription backend with Groq Whisper
+- Added Bilibili video processing
 - Added TXT / Markdown / SRT export
-- Improved local learning workflow
+- Improved personal learning workflow
